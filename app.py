@@ -4,6 +4,9 @@ import requests
 import inspect
 import pandas as pd
 
+from langchain_core.messages import HumanMessage
+from agent import build_graph
+
 # (Keep Constants as is)
 # --- Constants ---
 DEFAULT_API_URL = "https://agents-course-unit4-scoring.hf.space"
@@ -13,11 +16,20 @@ DEFAULT_API_URL = "https://agents-course-unit4-scoring.hf.space"
 class BasicAgent:
     def __init__(self):
         print("BasicAgent initialized.")
+        self.graph = build_graph()
     def __call__(self, question: str) -> str:
         print(f"Agent received question (first 50 chars): {question[:50]}...")
-        fixed_answer = "This is a default answer."
-        print(f"Agent returning fixed answer: {fixed_answer}")
-        return fixed_answer
+        messages = [HumanMessage(content=question)]
+        messages = self.graph.invoke({"messages": messages})
+        answer = messages["messages"][-1].content
+
+        if "</think>" in answer:
+            answer = answer.split("</think>", 1)[1].strip()
+        else:
+            answer = answer.strip()
+            
+        print(f"Agent returning answer: {answer}")
+        return answer
 
 def run_and_submit_all( profile: gr.OAuthProfile | None):
     """
