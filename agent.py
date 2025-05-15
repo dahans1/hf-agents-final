@@ -3,7 +3,9 @@ from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage
 from langgraph.graph import add_messages
 from langchain_ollama import ChatOllama
 
+tools = []
 llm = ChatOllama(model="qwen3:32b")
+llm_with_tools = llm.bind_tools(tools)
 
 class AgentState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
@@ -15,3 +17,7 @@ def assistant(state: AgentState):
     # system prompt provided to ensure agent answer is using the correct and expected format
     sys_message = f"You are a general AI assistant with provided tools:\n{textual_description_of_tools} \n I will ask you a question. Report your thoughts, and finish your answer with the following template: [YOUR FINAL ANSWER]. YOUR FINAL ANSWER should be a number OR as few words as possible OR a comma separated list of numbers and/or strings. If you are asked for a number, don't use comma to write your number neither use units such as $ or percent sign unless specified otherwise. If you are asked for a string, don't use articles, neither abbreviations (e.g. for cities), and write the digits in plain text unless specified otherwise. If you are asked for a comma separated list, apply the above rules depending of whether the element to be put in the list is a number or a string."
     sys_msg = SystemMessage(content=sys_message)
+
+    return {
+        "messages": [llm_with_tools.invoke([sys_msg] + state["messages"])]
+    }
