@@ -1,6 +1,8 @@
 from typing import Annotated, TypedDict
 from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage
-from langgraph.graph import add_messages
+from langgraph.graph.message import add_messages
+from langgraph.graph import START, StateGraph
+from langgraph.prebuilt import ToolNode, tools_condition
 from langchain_ollama import ChatOllama
 
 tools = []
@@ -21,3 +23,17 @@ def assistant(state: AgentState):
     return {
         "messages": [llm_with_tools.invoke([sys_msg] + state["messages"])]
     }
+
+def build_graph():
+    builder = StateGraph(AgentState)
+
+    # Define nodes: these do the work
+    builder.add_node("assistant", assistant)
+    builder.add_node("tools", ToolNode(tools))
+
+    # Define edges: these determine how the control flow moves
+    builder.add_edge(START, "assistant")
+    builder.add_conditional_edges("assistant", tools_condition)
+    builder.add_edge("tools", "assistant")
+
+    return builder.compile()
