@@ -17,17 +17,22 @@ class BasicAgent:
     def __init__(self):
         print("BasicAgent initialized.")
         self.graph = build_graph()
-    def __call__(self, question: str) -> str:
-        print(f"Agent received question (first 50 chars): {question[:50]}...")
-        messages = [HumanMessage(content=question)]
+    def __call__(self, question: str, file: str | None) -> str:
+        print(f"Agent received question: {question}...")
+
+        content = question
+        if file:
+            content += f"\n\nFile URL: {file}"
+        messages = [HumanMessage(content)]
         messages = self.graph.invoke({"messages": messages})
         answer = messages["messages"][-1].content
 
         if "</think>" in answer:
-            answer = answer.split("</think>", 1)[1].strip()
-        else:
-            answer = answer.strip()
-            
+            answer = answer.split("</think>", 1)[1]
+        if "ANSWER:" in answer:
+            answer = answer.split("ANSWER:", 1)[1]
+        answer = answer.strip()
+        
         print(f"Agent returning answer: {answer}")
         return answer
 
@@ -49,6 +54,7 @@ def run_and_submit_all( profile: gr.OAuthProfile | None):
     api_url = DEFAULT_API_URL
     questions_url = f"{api_url}/questions"
     submit_url = f"{api_url}/submit"
+    files_url = f"{api_url}/files"
 
     # 1. Instantiate Agent ( modify this part to create your agent)
     try:
@@ -92,7 +98,11 @@ def run_and_submit_all( profile: gr.OAuthProfile | None):
             print(f"Skipping item with missing task_id or question: {item}")
             continue
         try:
-            submitted_answer = agent(question_text)
+            file_url = f"{files_url}/{task_id}"
+            if "application/json" in requests.get(file_url).headers.get("Content-Type"):
+                file_url = None
+
+            submitted_answer = agent(question_text, file_url)
             answers_payload.append({"task_id": task_id, "submitted_answer": submitted_answer})
             results_log.append({"Task ID": task_id, "Question": question_text, "Submitted Answer": submitted_answer})
         except Exception as e:
