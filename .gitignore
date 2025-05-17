@@ -1,0 +1,8 @@
+# Youtube Audio files directory
+/yt_audio
+
+# Excel files downloaded locally
+*.xlsx
+
+# Config file for HF account
+.env
