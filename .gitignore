@@ -6,3 +6,6 @@
 
 # Config file for HF account
 .env
+
+# Python files created by agent
+__pycache__
