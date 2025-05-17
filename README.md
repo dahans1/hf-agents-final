@@ -1,5 +1,5 @@
 ---
-title: Template Final Assignment
+title: Final Assignment
 emoji: 🕵🏻‍♂️
 colorFrom: indigo
 colorTo: indigo
@@ -13,3 +13,5 @@ hf_oauth_expiration_minutes: 480
 ---
 
 Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+
+Certificate: ![HuggingFace AI Agents Certificate](https://cdn-uploads.huggingface.co/production/uploads/noauth/S8wmADY7t9Q1Bw2RcsddQ.webp)
